@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>예산 현황</title>
+    <style>
+        body  { font-family: sans-serif; margin: 32px; }
+        table { border-collapse: collapse; min-width: 640px; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; }
+        th { background: #eef3fa; }
+        td.num { text-align: right; }
+        .low { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+<h1 th:text="${year} + '년 예산 현황'">예산 현황</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>부서</th><th>예산 과목</th><th>편성액</th><th>사용 예정액</th><th>잔액</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="b : ${budgets}">
+        <td th:text="${b.deptName}">총무팀</td>
+        <td th:text="${b.itemName}">사무용품비</td>
+        <td class="num" th:text="${#numbers.formatInteger(b.amount, 1, 'COMMA')}">0</td>
+        <td class="num" th:text="${#numbers.formatInteger(b.usedAmount, 1, 'COMMA')}">0</td>
+        <!-- 잔액이 편성액의 20% 미만이면 빨간색 -->
+        <td class="num" th:classappend="${b.remain * 5 < b.amount} ? 'low'"
+            th:text="${#numbers.formatInteger(b.remain, 1, 'COMMA')}">0</td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(budgets)}">
+        <td colspan="5">편성된 예산이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

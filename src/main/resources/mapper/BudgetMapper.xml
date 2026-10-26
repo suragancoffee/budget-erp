@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace = 연결할 Mapper 인터페이스의 전체 이름 -->
+<mapper namespace="com.example.budget.mapper.BudgetMapper">
+
+    <!-- 예산 현황: 편성액 - (승인 + 대기 중인 신청액) = 잔액 -->
+    <select id="selectBudgetStatus" resultType="com.example.budget.dto.BudgetStatus">
+        SELECT b.budget_id,
+               d.dept_name,
+               i.item_name,
+               b.amount,
+               COALESCE(SUM(CASE WHEN e.status IN ('승인', '대기') THEN e.amount END), 0) AS used_amount,
+               b.amount - COALESCE(SUM(CASE WHEN e.status IN ('승인', '대기') THEN e.amount END), 0) AS remain
+        FROM budget b
+        JOIN dept d        ON d.dept_id = b.dept_id
+        JOIN budget_item i ON i.item_id = b.item_id
+        LEFT JOIN expense e ON e.budget_id = b.budget_id
+        WHERE b.fiscal_year = #{year}
+        GROUP BY b.budget_id, d.dept_name, i.item_name, b.amount
+        ORDER BY b.budget_id
+    </select>
+
+</mapper>
