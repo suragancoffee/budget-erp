@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>결재함</title>
+    <style>
+        body  { font-family: sans-serif; margin: 32px; }
+        table { border-collapse: collapse; margin-bottom: 32px; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; vertical-align: middle; }
+        th { background: #eef3fa; }
+        td.num { text-align: right; }
+        .msg   { background: #eafaf1; color: #1e8449; padding: 10px 14px; border: 1px solid #c3e6cb; }
+        .error { background: #fdecea; color: #c0392b; padding: 10px 14px; border: 1px solid #f5c6cb; }
+        .ok  { color: #1e8449; font-weight: bold; }
+        .no  { color: #c0392b; font-weight: bold; }
+        form.row select, form.row input { padding: 4px; }
+        form.row button { padding: 4px 10px; margin-left: 4px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+<h1>결재함</h1>
+<nav><a th:href="@{/budgets}">예산 현황</a><a th:href="@{/expenses/new}">집행 신청</a></nav>
+
+<p class="msg"   th:if="${message}" th:text="${message}">안내 메시지</p>
+<p class="error" th:if="${error}"   th:text="${error}">오류 메시지</p>
+
+<h2>결재 대기</h2>
+<table>
+    <thead>
+    <tr>
+        <th>번호</th><th>부서</th><th>예산 과목</th><th>신청 내용</th><th>금액</th><th>신청자</th><th>신청일</th><th>처리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="p : ${pending}">
+        <td th:text="${p.expenseId}">1</td>
+        <td th:text="${p.deptName}">총무팀</td>
+        <td th:text="${p.itemName}">사무용품비</td>
+        <td th:text="${p.title}">복사용지 구매</td>
+        <td class="num" th:text="${#numbers.formatInteger(p.amount, 1, 'COMMA')}">0</td>
+        <td th:text="${p.requesterName}">김담당</td>
+        <td th:text="${p.reqDate}">2026-10-26</td>
+        <td>
+            <!-- 승인/반려 버튼 둘 다 이 폼을 보냄. 어느 버튼을 눌렀는지가 action 값(승인/반려)으로 전달됨 -->
+            <form class="row" th:action="@{/approvals/{id}(id=${p.expenseId})}" method="post">
+                <select name="actorId" required>
+                    <option value="">결재자 선택</option>
+                    <option th:each="a : ${approvers}" th:value="${a.empId}"
+                            th:text="${a.empName + ' (' + a.deptName + ')'}">박팀장 (총무팀)</option>
+                </select>
+                <input type="text" name="memo" maxlength="200" placeholder="메모 (반려는 사유 필수)">
+                <button type="submit" name="action" value="승인">승인</button>
+                <button type="submit" name="action" value="반려">반려</button>
+            </form>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(pending)}">
+        <td colspan="8">결재 대기 중인 신청이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+
+<h2>결재 이력</h2>
+<table>
+    <thead>
+    <tr>
+        <th>신청 번호</th><th>신청 내용</th><th>처리</th><th>처리자</th><th>처리 시각</th><th>메모</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="h : ${history}">
+        <td th:text="${h.expenseId}">1</td>
+        <td th:text="${h.title}">복사용지 구매</td>
+        <td th:text="${h.action}"
+            th:classappend="${h.action == '승인' ? 'ok' : (h.action == '반려' ? 'no' : '')}">신청</td>
+        <td th:text="${h.actorName}">김담당</td>
+        <td th:text="${h.actionAt}">2026-10-26 18:12</td>
+        <td th:text="${h.memo}">메모</td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(history)}">
+        <td colspan="6">결재 이력이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

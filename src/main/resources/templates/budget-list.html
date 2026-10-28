@@ -11,7 +11,7 @@
         td.num { text-align: right; }
         .low { color: #c0392b; font-weight: bold; }
         .msg { background: #eafaf1; color: #1e8449; padding: 10px 14px; border: 1px solid #c3e6cb; }
-        .btn { display: inline-block; margin: 8px 0 16px; padding: 8px 16px; background: #2d6cdf; color: #fff; text-decoration: none; border-radius: 4px; }
+        .btn { display: inline-block; margin: 8px 0 16px; padding: 8px 16px; background: #2d6cdf; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -20,6 +20,8 @@
 <!-- 신청 성공 후 redirect로 넘어온 안내 메시지 -->
 <p class="msg" th:if="${message}" th:text="${message}">안내 메시지</p>
 <a class="btn" th:href="@{/expenses/new}">집행 신청</a>
+<a class="btn" th:href="@{/approvals}">결재함</a>
+<a class="btn" th:href="@{/reports}">집행률</a>
 
 <table>
     <thead>

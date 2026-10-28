@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.budget.mapper.EmployeeMapper">
+
+    <select id="selectRequesters" resultType="com.example.budget.dto.Employee">
+        SELECT e.emp_id, e.emp_name, d.dept_name
+        FROM employee e
+        JOIN dept d ON d.dept_id = e.dept_id
+        WHERE e.role = '담당자'
+        ORDER BY e.emp_id
+    </select>
+
+    <select id="selectApprovers" resultType="com.example.budget.dto.Employee">
+        SELECT e.emp_id, e.emp_name, d.dept_name
+        FROM employee e
+        JOIN dept d ON d.dept_id = e.dept_id
+        WHERE e.role = '결재자'
+        ORDER BY e.emp_id
+    </select>
+
+</mapper>

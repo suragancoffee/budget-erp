@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>부서별 집행률</title>
+    <style>
+        body  { font-family: sans-serif; margin: 32px; }
+        table { border-collapse: collapse; min-width: 720px; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; }
+        th { background: #eef3fa; }
+        td.num { text-align: right; }
+        .bar  { width: 160px; height: 14px; background: #e5e8ec; border-radius: 3px; display: inline-block; vertical-align: middle; }
+        .fill { height: 100%; background: #2d6cdf; border-radius: 3px; }
+        .note { color: #666; margin-top: 12px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+<h1 th:text="${year} + '년 부서별 집행률'">부서별 집행률</h1>
+<nav><a th:href="@{/budgets}">예산 현황</a><a th:href="@{/expenses/new}">집행 신청</a><a th:href="@{/approvals}">결재함</a></nav>
+<br>
+
+<table>
+    <thead>
+    <tr>
+        <th>부서</th><th>편성액</th><th>집행액</th><th>집행률</th><th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="r : ${rates}">
+        <td th:text="${r.deptName}">총무팀</td>
+        <td class="num" th:text="${#numbers.formatInteger(r.budgetAmount, 1, 'COMMA')}">0</td>
+        <td class="num" th:text="${#numbers.formatInteger(r.executedAmount, 1, 'COMMA')}">0</td>
+        <td class="num" th:text="${#numbers.formatDecimal(r.rate, 1, 1)} + '%'">0.0%</td>
+        <td><div class="bar"><div class="fill" th:style="'width:' + ${r.rate} + '%'"></div></div></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(rates)}">
+        <td colspan="5">편성된 예산이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+<p class="note">집행액은 <b>승인</b>된 금액만 계산합니다. (결재 대기 중인 금액은 예산 현황의 '사용 예정액'에서 확인)</p>
+</body>
+</html>

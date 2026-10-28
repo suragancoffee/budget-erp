@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.budget.mapper.ReportMapper">
+
+    <!-- 부서별 집행률 = 승인된 금액 / 편성액.
+         expense를 budget에 바로 JOIN하면 신청 건수만큼 편성액이 중복으로 더해지므로,
+         먼저 예산(budget_id)별로 승인액을 집계한 뒤(인라인 뷰 x) 그 결과를 JOIN한다. -->
+    <select id="selectDeptRate" resultType="com.example.budget.dto.DeptRate">
+        SELECT d.dept_name,
+               SUM(b.amount) AS budget_amount,
+               COALESCE(SUM(x.approved), 0) AS executed_amount,
+               COALESCE(ROUND(COALESCE(SUM(x.approved), 0) / NULLIF(SUM(b.amount), 0) * 100, 1), 0) AS rate
+        FROM budget b
+        JOIN dept d ON d.dept_id = b.dept_id
+        LEFT JOIN (SELECT budget_id, SUM(amount) AS approved
+                   FROM expense
+                   WHERE status = '승인'
+                   GROUP BY budget_id) x ON x.budget_id = b.budget_id
+        WHERE b.fiscal_year = #{year}
+        GROUP BY d.dept_id, d.dept_name
+        ORDER BY d.dept_id
+    </select>
+
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.budget.mapper.ApprovalMapper">
+
+    <!-- 결재 대기 목록: 신청 -> 예산 -> 부서/과목, 신청자까지 연결 -->
+    <select id="selectPending" resultType="com.example.budget.dto.PendingExpense">
+        SELECT x.expense_id,
+               d.dept_name,
+               i.item_name,
+               x.title,
+               x.amount,
+               emp.emp_name AS requester_name,
+               DATE_FORMAT(x.req_date, '%Y-%m-%d') AS req_date
+        FROM expense x
+        JOIN budget b        ON b.budget_id = x.budget_id
+        JOIN dept d          ON d.dept_id   = b.dept_id
+        JOIN budget_item i   ON i.item_id   = b.item_id
+        JOIN employee emp    ON emp.emp_id  = x.emp_id
+        WHERE x.status = '대기'
+        ORDER BY x.expense_id
+    </select>
+
+    <!-- 결재 이력: 누가 언제 무엇을 했는지 (최신이 위) -->
+    <select id="selectHistory" resultType="com.example.budget.dto.ApprovalHistory">
+        SELECT h.hist_id,
+               h.expense_id,
+               x.title,
+               h.action,
+               emp.emp_name AS actor_name,
+               DATE_FORMAT(h.action_at, '%Y-%m-%d %H:%i') AS action_at,
+               h.memo
+        FROM approval_history h
+        JOIN expense x    ON x.expense_id = h.expense_id
+        JOIN employee emp ON emp.emp_id   = h.actor_id
+        ORDER BY h.hist_id DESC
+    </select>
+
+    <!-- 처리 권한: 결재자 역할 + 신청 건이 속한 예산의 부서와 같은 부서 -->
+    <select id="countAllowedApprover" resultType="int">
+        SELECT COUNT(*)
+        FROM employee emp
+        JOIN expense x ON x.expense_id = #{expenseId}
+        JOIN budget b  ON b.budget_id  = x.budget_id
+        WHERE emp.emp_id  = #{actorId}
+          AND emp.role    = '결재자'
+          AND emp.dept_id = b.dept_id
+    </select>
+
+    <!-- '대기'일 때만 상태 변경. 처리된 행 수가 반환됨 -->
+    <update id="updateStatusIfPending">
+        UPDATE expense
+        SET status = #{status}
+        WHERE expense_id = #{expenseId}
+          AND status = '대기'
+    </update>
+
+    <insert id="insertHistory">
+        INSERT INTO approval_history (expense_id, actor_id, action, memo)
+        VALUES (#{expenseId}, #{actorId}, #{action}, #{memo,jdbcType=VARCHAR})
+    </insert>
+
+</mapper>

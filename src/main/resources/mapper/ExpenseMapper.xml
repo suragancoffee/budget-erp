@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.budget.mapper.ExpenseMapper">
+
+    <!-- 잔액 = 편성액 - (승인 + 대기). FOR UPDATE: 이 예산의 행을 잠가서,
+         같은 예산에 대한 다른 신청은 이 트랜잭션이 끝날 때까지 여기서 기다림 -->
+    <select id="selectRemainForUpdate" resultType="java.lang.Long">
+        SELECT b.amount - COALESCE(SUM(CASE WHEN e.status IN ('승인', '대기') THEN e.amount END), 0) AS remain
+        FROM budget b
+        LEFT JOIN expense e ON e.budget_id = b.budget_id
+        WHERE b.budget_id = #{budgetId}
+        GROUP BY b.amount
+        FOR UPDATE
+    </select>
+
+    <!-- status를 안 넣으면 DB 기본값 '대기'가 들어감. useGeneratedKeys: 생긴 번호를 expenseId에 채워 줌 -->
+    <insert id="insertExpense" parameterType="com.example.budget.dto.ExpenseRequest"
+            useGeneratedKeys="true" keyProperty="expenseId">
+        INSERT INTO expense (budget_id, emp_id, title, amount, req_date)
+        VALUES (#{budgetId}, #{empId}, #{title}, #{amount}, #{reqDate})
+    </insert>
+
+    <insert id="insertHistory">
+        INSERT INTO approval_history (expense_id, actor_id, action)
+        VALUES (#{expenseId}, #{actorId}, #{action})
+    </insert>
+
+</mapper>

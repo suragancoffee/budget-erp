@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>집행 신청</title>
+    <style>
+        body  { font-family: sans-serif; margin: 32px; }
+        form  { max-width: 520px; }
+        label { display: block; margin-top: 16px; font-weight: bold; }
+        select, input { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; }
+        button { margin-top: 24px; padding: 10px 24px; }
+        .error { background: #fdecea; color: #c0392b; padding: 10px 14px; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+<h1>집행 신청</h1>
+
+<!-- 업무 규칙 위반(잔액 부족 등) 메시지 -->
+<p class="error" th:if="${error}" th:text="${error}">오류 메시지</p>
+
+<form th:action="@{/expenses}" method="post">
+    <label>예산 과목
+        <select name="budgetId" required>
+            <option value="">선택하세요</option>
+            <option th:each="b : ${budgets}"
+                    th:value="${b.budgetId}"
+                    th:selected="${form.budgetId == b.budgetId}"
+                    th:text="${b.deptName + ' / ' + b.itemName + ' (잔액 ' + #numbers.formatInteger(b.remain, 1, 'COMMA') + '원)'}">
+                총무팀 / 사무용품비 (잔액 2,500,000원)
+            </option>
+        </select>
+    </label>
+
+    <label>신청자
+        <select name="empId" required>
+            <option value="">선택하세요</option>
+            <option th:each="e : ${employees}"
+                    th:value="${e.empId}"
+                    th:selected="${form.empId == e.empId}"
+                    th:text="${e.empName + ' (' + e.deptName + ')'}">
+                김담당 (총무팀)
+            </option>
+        </select>
+    </label>
+
+    <label>신청 내용
+        <input type="text" name="title" maxlength="100" required th:value="${form.title}">
+    </label>
+
+    <label>금액(원)
+        <input type="number" name="amount" min="1" required th:value="${form.amount}">
+    </label>
+
+    <button type="submit">신청</button>
+    <a th:href="@{/budgets}">취소</a>
+</form>
+</body>
+</html>
