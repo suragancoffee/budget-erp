@@ -125,6 +125,18 @@ erDiagram
 <img src="docs/08-db-expense.png" width="480" alt="expense 테이블">
 <img src="docs/09-db-approval-history.png" width="480" alt="approval_history 테이블">
 
+## 개발 단계
+
+| 단계 | 내용 | 구현·확인한 것 |
+|---|---|---|
+| 1 | 예산 현황 조회 | Controller → Service → Mapper 흐름, 잔액 = 편성액 − (승인 + 대기) 계산 SQL |
+| 2 | 집행 신청 | 서버 잔액 검증, `@Transactional`, `SELECT ... FOR UPDATE` |
+| 3 | 결재함 | 승인·반려(대기일 때만 변경), 결재 이력 INSERT, 같은 부서 결재자 권한 검사 |
+| 4 | 부서별 집행률 | 집계 후 JOIN하는 SQL |
+| 5 | 문서화 | README, DB 스크립트, 화면 캡처 |
+
+> 커밋 기록에서 3~4단계 코드는 두 번째 "2단계: 집행 신청..." 이름으로 남아 있습니다. 커밋 메시지를 잘못 붙인 것이고, 내용은 결재함과 집행률입니다.
+
 ## 실행 방법
 
 1. JDK 17, MySQL 8을 설치합니다.
